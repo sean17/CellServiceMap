@@ -1,0 +1,195 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+	  <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+    <link rel="apple-touch-startup-image" href="startup.png" />
+    <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+    <link rel="stylesheet" href="main.css" type="text/css" media="screen" charset="utf-8">
+	  <link  href="http://fonts.googleapis.com/css?family=PT+Sans+Narrow:regular,bold&subset=cyrillic" rel="stylesheet" type="text/css" > 
+		<link  href="http://fonts.googleapis.com/css?family=Reenie+Beanie:regular&subset=latin" rel="stylesheet" type="text/css" >
+		<!-- jQuery 1.4.2 -->
+	  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+	  <!-- jQuery tools -->
+	  <script src="jquery.scrollTo-1.4.2-min.js"></script>
+        
+		<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
+    <script>
+      var map;
+      var markersArray = [];
+
+var myIcon = 'Basic.jpg';
+      function initialize() {
+	        var NCampusMap = new google.maps.LatLng(43.0, -78.785);
+		      var mapOptions = {
+				    zoom: 14,
+						center: NCampusMap,
+					  mapTypeId: google.maps.MapTypeId.TERRAIN
+					};
+					map =  new google.maps.Map(document.getElementById("map_canvas"), mapOptions);
+
+					/* old custm icon code
+					var myIcon = new GIcon(G_DEFAULT_ICON);
+        	myIcon.image = "custom_rr_icon.png";
+				  myIcon.iconSize = new GSize(22, 31);
+					myIcon.shadow = "custom_rr_icon_shadow.png";
+					myIcon.shadowSize = new GSize(42, 31);
+					myIcon.iconAnchor = new GPoint(10, 29);*/
+          
+					/* new custom icon code
+					var image = new google.maps.MarkerImage('images/beachflag.png',
+					      // This marker is 20 pixels wide by 32 pixels tall.
+								      new google.maps.Size(20, 32),
+											      // The origin for this image is 0,0.
+														      new google.maps.Point(0,0),
+																	      // The anchor for this image is the base of the flagpole at 0,32.
+																				      new google.maps.Point(0, 32));
+					  var shadow = new google.maps.MarkerImage('images/beachflag_shadow.png',
+						      // The shadow image is larger in the horizontal dimension
+									      // while the position and offset are the same as for the main image.
+												      new google.maps.Size(37, 32),
+															      new google.maps.Point(0,0),
+																		      new google.maps.Point(0, 32));
+						      // Shapes define the clickable region of the icon.
+									      // The type defines an HTML <area> element 'poly' which
+												      // traces out a polygon as a series of X,Y points. The final
+															      // coordinate closes the poly by connecting to the first
+																		      // coordinate.
+																					  var shape = {
+																							      coord: [1, 1, 1, 20, 18, 20, 18 , 1],
+																										      type: 'poly'
+
+																													*/	
+
+					// RR Brewery Marker
+          var marker = new google.maps.Marker({
+	            position: NCampusMap, 
+				      map: map, 
+						  title:"Signal Strength",
+							icon: myIcon
+				  });
+			//		var contentString = "Byah"
+			//	  var infowindow = new google.maps.InfoWindow({
+			//			    content: contentString
+			//		});
+
+					google.maps.event.addListener(marker, 'click', function() {
+						  infowindow.open(map,marker);
+					});
+
+         // Make JSON call for beer listings
+	       $("<script/>").attr("src", "http://www.otterbrau.com:4020/beer").appendTo('head');
+		// add resize handler
+							$("#map_canvas").css({"height" : $(window).height()-250});
+							$(window).resize(function(){
+									$("#map_canvas").css({"height" : $(window).height()-250});
+							});
+
+							$(".rr-body-hldr").css({"height" : $(window).height()-150});
+							$(window).resize(function(){
+								 $(".rr-body-hldr").css({"height" : $(window).height()-150});
+							});
+		
+		}
+	   function addMarker(location, placeName, sellerAddy) {
+		    var marker = new google.maps.Marker({
+				    position: location,
+						map: map,
+						title: placeName,
+						html: "<strong>"+placeName+"<br /></strong>" + sellerAddy,
+						icon: myIcon
+				});
+				var infowindow = new google.maps.InfoWindow({
+					  content: placeName
+					});
+				google.maps.event.addListener(marker, 'click', function() {
+					infowindow.setContent(this.html);
+					infowindow.open(map, this);
+				});	
+			  markersArray.push(marker);
+	   }
+
+	function getMarkerData(data) {
+		var city;
+		var cityComp;
+		var data = ["43.0", "-78.785"];
+
+		var sellerLocation = new google.maps.LatLng(data[0].latitude, data[1].longitude);
+		var sellerName = data[0];
+		var sellerAddy = data[0];
+		addMarker(sellerLocation, sellerName, sellerAddy);
+		// Loop through Sellers and construct both map markers and business listings separated by city
+		
+		/**for (i in data) {
+			var sellerLocation = new google.maps.LatLng(data[i].latitude, data[i].longitude);
+			var sellerName = data[i].name;
+			var sellerAddy = data[i].address+" "+data[i].city+", "+data[i].state+" "+data[i].zipcode+" "+data[i].phone;
+			addMarker(sellerLocation, sellerName, sellerAddy);
+			cityComp = data[i].city;
+			if (city == cityComp) {
+         city = cityComp;
+			} else {
+         $('<div/>').attr('class', 'rr-city-blk').append("<h2>"+cityComp+"</h2>").appendTo('.rr-body-hldr');
+				 city = cityComp;
+			}
+        $('.rr-body-hldr').append("<div class='rr-bus-listing' onclick='moveToSeller("+data[i].latitude+", "+data[i].longitude+");'><div class='rr-loc-name'>"+data[i].name+"</div><div class='rr-addy'>"+data[i].address+" "+data[i].city+" "+data[i].state+" "+data[i].zipcode+"</div><div class='rr-phone'>"+data[i].phone+"</div></div>");
+		} **/
+		$('<div/>').attr('class', 'clear').appendTo('.rr-body-hldr');
+
+				 // Make seller listings clickable
+        $('.rr-bus-listing').click(function(){
+		         $.scrollTo(0, 3000);
+		    });
+		}
+
+  function moveToSeller(sellat, sellong) {
+		  var centSel = new google.maps.LatLng(sellat, sellong);
+			  map.setCenter(centSel);
+				map.setZoom(15);
+	}
+
+		</script>
+
+<style media="all and (max-device-width: 350px)">
+    .rr-cont-hldr { padding:0; }
+		.rr-head-hldr { text-align:center;  }
+		.rr-head-hldr img { width:200px; }
+		.rr-bus-listing { float:none; font-size:115%; width:auto; height:auto; }
+		.rr-body-hldr { padding:0; }
+</style>
+
+	  <title>UB North Campus Map</title>
+				
+  </head>
+
+  <body onload="initialize()">
+	  <div class="rr-cont-hldr">
+		  <div class="rr-head-hldr">
+				<div class="rr-drop-block">&nbsp;</div>
+        <h1><span>UB Map</span> North Campus</h1>
+			</div>	
+      <div id="map_canvas" style="height:400px;"></div>
+			<div class="rr-body-hldr">
+			</div>
+		</div>
+		<script type="text/javascript">
+      //Google tracking
+		  var _gaq = _gaq || [];
+			  _gaq.push(['_setAccount', 'UA-19019874-1']);
+				  _gaq.push(['_trackPageview']);
+
+					  (function() {
+							    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+									    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+											    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+													  })();
+
+
+														</script>
+  </body>
+</html>
+
